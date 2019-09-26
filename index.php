@@ -59,7 +59,7 @@ function gform_onl_post_replicator( $entry, $form ) {
 	 		$pbl_group = sanitize_title(trim_cat_to_text($entry['9']));
  		}
  	if ($entry['2']){
- 		 	$focus = sanitize_title(trim_cat_to_text($entry['2']));
+ 		 	$focus = sanitize_title(trim_cat_to_text($entry['2'])); 		 
  	}	
 
  	$destination = 3; //onl192  --- should be 3 for production
@@ -78,7 +78,7 @@ function gform_onl_post_replicator( $entry, $form ) {
 		}
 		if(get_category_by_slug($focus)){
 			$focus_id = get_category_by_slug($focus)->term_id;
-			array_push($all_cats, (int)$focus);
+			array_push($all_cats, (int)$focus_id);
 		}
 		//$group_cat_id = get_category_by_slug('category-slug'); //need to get this from blog url
 		$new_post = array(
