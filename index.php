@@ -60,10 +60,7 @@ function gform_onl_post_replicator( $entry, $form ) {
  		}
  	if ($entry['2']){
  		 	$focus = sanitize_title(trim_cat_to_text($entry['2']));
- 	}
-
- 	var_dump($pbl_group);
-	var_dump($focus); 	
+ 	}	
 
  	$destination = 3; //onl192  --- should be 3 for production
 	if (in_category('pbl-group-work', $entry['post_id'])){
