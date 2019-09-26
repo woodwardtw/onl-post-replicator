@@ -54,15 +54,34 @@ function gform_onl_post_replicator( $entry, $form ) {
     $title = $post->post_title;
  	$content = $post->post_content;
  	$image_url = get_the_post_thumbnail_url($entry['post_id']);
+ 	$all_cats = [];
+ 	if ($entry['9']){
+	 		$pbl_group = sanitize_title(trim_cat_to_text($entry['9']));
+ 		}
+ 	if ($entry['2']){
+ 		 	$focus = sanitize_title(trim_cat_to_text($entry['2']));
+ 	}
+
+ 	var_dump($pbl_group);
+	var_dump($focus); 	
 
  	$destination = 3; //onl192  --- should be 3 for production
 	if (in_category('pbl-group-work', $entry['post_id'])){
-		write_log(__LINE__);
-		write_log(switch_to_blog( $destination ));
+		switch_to_blog( $destination );
 		if(get_category_by_slug('pbl-group-work')){
 			$pbl_cat_id = get_category_by_slug('pbl-group-work')->term_id;
+			array_push($all_cats, (int)$pbl_cat_id);
 		} else {
 			$pbl_cat_id = 1;
+			array_push($all_cats, $pbl_cat_id);			
+		}
+		if(get_category_by_slug($pbl_group)){
+			$pbl_group_id = get_category_by_slug($pbl_group)->term_id;
+			array_push($all_cats, (int)$pbl_group_id);
+		}
+		if(get_category_by_slug($focus)){
+			$focus_id = get_category_by_slug($focus)->term_id;
+			array_push($all_cats, (int)$focus);
 		}
 		//$group_cat_id = get_category_by_slug('category-slug'); //need to get this from blog url
 		$new_post = array(
@@ -70,7 +89,7 @@ function gform_onl_post_replicator( $entry, $form ) {
 		  'post_content'  => '<img src="'.$image_url.'">' . $content,
 		  'post_status'   => 'publish',
 		  'post_author'   => $author,
-		  'post_category' => array( $pbl_cat_id ),
+		  'post_category' => $all_cats,
 		);
 		 
 		// Insert the post into the database
@@ -81,6 +100,12 @@ function gform_onl_post_replicator( $entry, $form ) {
    
 }
 
+function trim_cat_to_text($text){
+	$length = strlen($text);
+	$colon = strpos($text, ':');
+	$text = substr($text, 0, $colon);
+	return $text;
+}
 
 
 if ( ! function_exists('write_log')) {
