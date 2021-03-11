@@ -21,17 +21,19 @@ function onl_post_replicator($ID, $post) {
     $content = $post->post_content;
     
 	//switch to other site to make the post
-	$destination = 3; //onl192  --- should be 3 for production
-	if (in_category('pbl-groupwork')){
+	$destination = 79; //***********************************************************************onl211  
+	if (in_category('pbl-group-work')){
 		switch_to_blog( $destination );
-		$pbl_cat_id = get_category_by_slug('pbl-groupwork')->term_id;
-		//$group_cat_id = get_category_by_slug('category-slug'); //need to get this from blog url
+		$pbl_cat_id = get_category_by_slug('pbl-group-work')->term_id;
+		$pbl_num = substr(get_bloginfo('name'),-2);
+		$pbl_category_slug = 'pbl-group-' . $pbl_num;
+		$group_cat_id = get_category_by_slug($pbl_category_slug); //need to get this from blog url
 		$new_post = array(
 		  'post_title'    => $title,
 		  'post_content'  => $content,
 		  'post_status'   => 'publish',
 		  'post_author'   => $author,
-		  'post_category' => array( $pbl_cat_id ),
+		  'post_category' => array( $pbl_cat_id, $group_cat_id ),
 		);
 		 
 		// Insert the post into the database
@@ -45,6 +47,68 @@ function onl_post_replicator($ID, $post) {
 add_action( 'publish_post', 'onl_post_replicator', 10, 2 );
 
 
+//GFORM VERSION
+add_action( 'gform_after_submission', 'gform_onl_post_replicator', 10, 2 );
+function gform_onl_post_replicator( $entry, $form ) {
+    //getting post
+    $post = get_post( $entry['post_id'] );
+    $author = $post->post_author;
+    $title = $post->post_title;
+ 	$content = $post->post_content;
+ 	$image_url = get_the_post_thumbnail_url($entry['post_id']);
+ 	$all_cats = [];
+ 	//if ($entry['9']){
+	 		// $pbl_group = sanitize_title(trim_cat_to_text($entry['9']));
+	 		// write_log($pbl_group);
+ 		$pbl_name = get_bloginfo('name');
+ 		$pbl_num = substr($pbl_name, -2);
+		$pbl_group = 'pbl-group-' . $pbl_num;
+ 		//}
+ 	if ($entry['2']){
+ 		 	$focus = sanitize_title(trim_cat_to_text($entry['2'])); 		 
+ 	}	
+
+ 	$destination = 79; //***********************************************************************onl211  
+	//if (in_category('pbl-group-work', $entry['post_id'])){
+		switch_to_blog( $destination );
+		if(get_category_by_slug('pbl-group-work')){
+			$pbl_cat_id = get_category_by_slug('pbl-group-work')->term_id;
+			array_push($all_cats, (int)$pbl_cat_id);
+		} else {
+			$pbl_cat_id = 1;
+			array_push($all_cats, $pbl_cat_id);			
+		}
+		if(get_category_by_slug($pbl_group)){
+			$pbl_group_id = get_category_by_slug($pbl_group)->term_id;
+			array_push($all_cats, (int)$pbl_group_id);
+		}
+		if(get_category_by_slug($focus)){
+			$focus_id = get_category_by_slug($focus)->term_id;
+			array_push($all_cats, (int)$focus_id);
+		}
+		//$group_cat_id = get_category_by_slug('category-slug'); //need to get this from blog url
+		$new_post = array(
+		  'post_title'    => $title,
+		  'post_content'  => '<img src="'.$image_url.'">' . $content,
+		  'post_status'   => 'publish',
+		  'post_author'   => $author,
+		  'post_category' => $all_cats,
+		);
+		 
+		// Insert the post into the database
+		wp_insert_post( $new_post );
+
+    	restore_current_blog();
+	//}
+   
+}
+
+function trim_cat_to_text($text){
+	$length = strlen($text);
+	$colon = strpos($text, ':');
+	$text = substr($text, 0, $colon);
+	return $text;
+}
 
 
 if ( ! function_exists('write_log')) {
